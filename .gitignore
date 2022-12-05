@@ -6,3 +6,4 @@ backend.hcl
 *.pkrvars
 debug.tf
 *.lock.hcl
+*.DS_STORE
