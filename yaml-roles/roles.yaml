@@ -1,0 +1,6 @@
+role-priv-read: 
+  - "roles/run.invoker"
+#["roles/run.invoker", "roles/run.developer", "roles/compute.admin"]
+# role-priv-write: ["roles/run.invoker", "roles/run.developer", "roles/compute.admin"]
+# role-priv-admin: ["roles/run.invoker", "roles/run.developer", "roles/compute.admin"]
+# role-service-accounts: ["roles/run.invoker", "roles/run.developer", "roles/compute.admin"]
