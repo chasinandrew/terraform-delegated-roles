@@ -1,0 +1,32 @@
+import "tfplan"
+# Modules from https://github.com/hashicorp/terraform-guides/blob/master/governance/third-generation/common-functions/tfplan-functions/tfplan-functions.sentinel
+import "tfplan-functions" as plan
+
+iamMember = plan.find_resources("google_project_iam_member")
+
+# denied_roles_list contains roles that should not be allowed to 
+denied_roles_list = [
+"roles/artifactregistry.admin", 
+"roles/artifactregistry.repoAdmin", 
+"roles/artifactregistry.writer", 
+"roles/automl.admin", "roles/automl.editor", "roles/automl.predictor", "roles/automlrecommendations.admin", "roles/automlrecommendations.adminViewer", "roles/automlrecommendations.editor", "roles/bigquery.admin", "roles/bigquery.connectionAdmin", "roles/bigquery.connectionUser", "roles/bigquery.dataEditor", "roles/bigquery.dataOwner", "roles/bigquery.metadataViewer", "roles/bigquery.readSessionUser", "roles/bigquery.resourceAdmin", "roles/bigquery.resourceEditor", "roles/bigquery.user", "roles/bigquerymigration.editor", "roles/bigquerymigration.orchestrator", "roles/bigquerymigration.translationUser", "roles/bigquerymigration.worker", "roles/bigquery.admin", "roles/bigtable.admin", "roles/bigtable.user", "roles/bigtable.viewer", "roles/binaryauthorization.attestorsAdmin", "roles/binaryauthorization.attestorsEditor", "roles/binaryauthorization.attestorsVerifier", "roles/binaryauthorization.policyAdmin", "roles/binaryauthorization.policyEditor", "roles/binaryauthorization.policyEvaluator", "roles/cloudasset.owner", "roles/cloudbuild.builds.approver", "roles/cloudbuild.builds.editor", "roles/cloudbuild.integrationsEditor", "roles/cloudbuild.integrationsOwner", "roles/cloudbuild.workerPoolEditor", "roles/cloudbuild.workerPoolOwner", "roles/cloudbuild.workerPoolUser", "roles/composer.admin", "roles/composer.environmentAndStorageObjectAdmin", "roles/composer.user", "roles/composer.worker", "roles/cloudfunctions.admin", "roles/cloudfunctions.developer", "roles/cloudfunctions.invoker", "roles/cloudkms.admin", "roles/lifesciences.admin", "roles/lifesciences.editor", "roles/lifesciences.workflowsRunner", "roles/run.admin", "roles/run.developer", "roles/run.invoker", "roles/cloudscheduler.admin", "roles/cloudscheduler.jobRunner", "roles/cloudsql.admin", "roles/cloudsql.client", "roles/cloudsql.editor", "roles/cloudsql.instanceUser", "roles/storage.admin", "roles/storage.objectAdmin", "roles/storage.objectCreator", "roles/storagetransfer.admin", "roles/storagetransfer.transferAgent", "roles/storagetransfer.user", "roles/cloudtasks.admin", "roles/cloudtasks.enqueuer", "roles/cloudtasks.queueAdmin", "roles/cloudtasks.taskDeleter", "roles/tpu.admin", "roles/cloudtranslate.admin", "roles/cloudtranslate.editor", "roles/cloudtranslate.user", "roles/containeranalysis.admin", "roles/containeranalysis.notes.attacher", "roles/containeranalysis.notes.editor", "roles/containeranalysis.notes.occurrences.viewer", "roles/containeranalysis.notes.viewer", "roles/containeranalysis.occurrences.editor", "roles/containeranalysis.occurrences.viewer", "roles/datapipelines.admin", "roles/datapipelines.invoker", "roles/dataflow.admin", "roles/dataflow.developer", "roles/dataflow.worker", "roles/dataproc.admin", "roles/dataproc.editor", "roles/dataproc.hubAgent", "roles/dataproc.worker", "roles/metastore.admin", "roles/metastore.editor", "roles/metastore.federationAccessor", "roles/metastore.metadataEditor", "roles/metastore.metadataOperator", "roles/metastore.metadataOwner", "roles/metastore.metadataUser", "roles/metastore.user", "roles/datastore.owner", "roles/datastore.user", "roles/eventarc.admin", "roles/eventarc.connectionPublisher", "roles/eventarc.developer", "roles/eventarc.eventReceiver", "roles/eventarc.publisher", "roles/logging.admin", "roles/logging.bucketWriter", "roles/logging.configWriter", "roles/logging.logWriter", "roles/memcache.admin", "roles/memcache.editor", "roles/redis.admin", "roles/redis.editor", "roles/meshconfig.admin", "roles/monitoring.admin", "roles/monitoring.alertPolicyEditor", "roles/monitoring.metricsScopesAdmin", "roles/monitoring.metricWriter", "roles/pubsub.admin", "roles/pubsub.editor", "roles/pubsub.publisher", "roles/pubsub.subscriber", "roles/secretmanager.admin", "roles/secretmanager.secretVersionAdder", "roles/secretmanager.secretVersionManager", "roles/vpcaccess.admin", "roles/vpcaccess.user", "roles/spanner.admin", "roles/spanner.backupAdmin", "roles/spanner.backupWriter", "roles/spanner.databaseAdmin", "roles/spanner.databaseUser", "roles/spanner.restoreAdmin", "roles/spanner.viewer", "roles/aiplatform.admin", "roles/aiplatform.entityTypeOwner", "roles/aiplatform.featurestoreAdmin", "roles/aiplatform.featurestoreDataWriter", "roles/aiplatform.featurestoreInstanceCreator", "roles/aiplatform.migrator", "roles/aiplatform.user", "roles/notebooks.admin", "roles/notebooks.runner"
+]
+
+violatingIamBinding = plan.filter_attribute_in_list(iamMember,
+                        "role", denied_roles_list, true)
+                        
+# Check if the default App Engine and Compute service accounts are defined as members. 
+# Default Compute -compute@developer.gserviceaccount.com
+# Default App Spot @appspot.gserviceaccount.com
+#(-compute@developer\\.gserviceaccount\\.com|@appspot\\.gserviceaccount\\.com)
+default_sa_regex = "^group:.*_priv_write@hca\\.corpad\\.net$"
+
+violatingSa = plan.filter_attribute_matches_regex(iamMember,
+                        "member", default_sa_regex, true)
+
+
+# Main rule
+main = rule {
+  violatingSa is 0 and
+  violatingIamBinding is 0 
+}
