@@ -219,9 +219,9 @@ denied_roles_list = [
 
 violatingIamBinding = plan.filter_attribute_in_list(iamMember,"role", denied_roles_list, true)
 default_user_regex = "^user:.*"
-violatingGroup = plan.filter_attribute_matches_regex(iamMember,"member", default_user_regex, true)
+violatingUser = plan.filter_attribute_matches_regex(iamMember,"member", default_user_regex, true)
 
 main = rule {
-  violatingGroup is 0 and
+  violatingUser is 0 and
   violatingIamBinding is 0 
 }
