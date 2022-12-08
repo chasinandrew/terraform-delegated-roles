@@ -108,9 +108,7 @@ denied_roles_list = [
 ]
 
 violatingIamBinding = plan.filter_attribute_in_list(iamMember,"role", denied_roles_list, true)
-                        
 default_group_regex = "^group:.*_priv_write@hca\\.corpad\\.net$"
-
 violatingGroup = plan.filter_attribute_matches_regex(iamMember,"member", default_group_regex, true)
 
 
